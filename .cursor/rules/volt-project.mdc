@@ -1,0 +1,386 @@
+---
+alwaysApply: true
+globs:
+  - "resources/views/livewire/**/*.blade.php"
+  - "resources/views/pages/**/*.blade.php"
+---
+
+# Volt Functional実装ルール
+
+## このプロジェクト固有の方針
+- **Functionalスタイル必須** - クラスベースコンポーネント禁止
+- `sail artisan make:volt` 実行時は `--functional` オプション必須
+- 単一責任の原則遵守
+- コンポーネントの再利用性重視
+
+## 必須構文パターン
+
+### 基本構造
+```php
+<?php
+use function Livewire\Volt\{state, mount, computed, rules};
+
+// 状態定義
+state(['propertyName' => 'defaultValue']);
+
+// 初期化処理（必要に応じて）
+mount(function () {
+    // 初期化ロジック
+});
+
+// バリデーションルール
+rules([
+    'field' => 'required|max:255',
+]);
+
+// メソッド定義
+$methodName = function () {
+    $this->validate();
+    
+    // 処理ロジック
+    
+    // リダイレクト（必要に応じて）
+    return $this->redirect(route('route.name'), navigate: true);
+};
+?>
+
+<div>
+    <!-- Bladeテンプレート -->
+</div>
+```
+
+### モデルバインディング
+```php
+// ルートパラメータ名とモデル名を一致させる
+mount(function (Model $model) {
+    $this->model = $model;
+});
+```
+
+### 認可制御
+```php
+// アクション実行前に必ず認可チェック
+$update = function () {
+    $this->authorize('update', $this->model);
+    // 処理
+};
+```
+
+## ルーティング設計
+
+### 基本方針
+- フルページコンポーネントは`Volt::route()`使用
+- 名前付きルート必須
+- ミドルウェアはルート定義時に指定
+
+### 命名規約
+- リソース系（CRUD）: 複数形（例: memos, posts, jobs）
+- 機能系: 単数形または適切な形式（dashboard, profile, settings）
+
+### コンポーネント配置
+- パス: `resources/views/livewire/{resource}/{action}.blade.php`
+- 例: 
+  - `resources/views/livewire/jobs/index.blade.php`
+  - `resources/views/livewire/jobs/create.blade.php`
+  - `resources/views/livewire/jobs/edit.blade.php`
+  - `resources/views/livewire/jobs/show.blade.php`
+
+## UI/UX
+- Flux UI Free コンポーネント優先使用
+- Tailwind CSSによるスタイリング
+- レスポンシブデザイン必須
+- ローディング状態の適切な表示（`wire:loading`）
+
+
+## Flux UIコンポーネントの初期値設定
+
+編集画面で既存データを表示する際は、`wire:model`だけでは初期表示時に値が反映されない場合があるため、以下のように**明示的に初期値を設定する**。
+
+### セレクトボックス
+
+```php
+<flux:select wire:model="fieldName" placeholder="選択...">
+    @foreach ($items as $item)
+        <option value="{{ $item->id }}" @selected($fieldName == $item->id)>
+            {{ $item->name }}
+        </option>
+    @endforeach
+</flux:select>
+```
+
+- 各`<option>`に`@selected()`ディレクティブを追加
+- 条件: 現在の値と一致するかチェック
+
+### ラジオボタン
+
+```php
+<flux:radio wire:model="fieldName" value="option1" label="ラベル" :checked="$fieldName === 'option1'" />
+<flux:radio wire:model="fieldName" value="option2" label="ラベル2" :checked="$fieldName === 'option2'" />
+```
+
+- `:checked`属性で初期選択状態を設定
+- Blade属性バインディング（`:`）を使用
+
+### テキストフィールド
+
+```php
+<flux:input wire:model="fieldName" type="text" placeholder="例：..." value="{{ $fieldName }}" />
+```
+
+- `value`属性で初期値を設定
+
+### テキストエリア
+
+```php
+<flux:textarea wire:model="fieldName" rows="3" placeholder="例：...">
+    {{ $fieldName }}
+</flux:textarea>
+```
+
+- 開始タグと終了タグの間に値を配置
+- 自己閉じタグ（`/>`）は使用しない
+
+### 注意事項
+
+- `mount()`関数で既存データを状態変数にセットすることが前提
+- `wire:model`は双方向バインディングを提供するが、初期表示には上記の属性が必要
+- 特にFlux UIコンポーネントでは明示的な初期値設定が重要
+
+## Flux UI + Livewire 実装ガイドライン
+
+### 基本原則
+
+- Flux UIコンポーネントと`wire:model`を組み合わせる際は、初期値の設定をLivewireに任せる
+- 複雑な動的制御が必要な場合は、標準HTMLとTailwind CSSを使用する
+
+### 初期値の設定（重要）
+
+#### NG: 手動で初期値を設定
+
+```php
+<!-- これらは wire:model と競合してエラーを引き起こす -->
+<flux:input wire:model="name" value="{{ $name }}" />
+<flux:select wire:model="location">
+    <option value="1" @selected($location == 1)>東京</option>
+</flux:select>
+<flux:radio wire:model="gender" value="male" :checked="$gender === 'male'" />#### ✅ OK: wire:modelに初期値を任せる
+
+<!-- Livewireが自動的に初期値を設定 -->
+<flux:input wire:model="name" />
+<flux:select wire:model="location">
+    <option value="1">東京</option>
+</flux:select>
+```
+
+#### OK（例外）: textareaの初期値
+
+```php
+<!-- タグ間に値を配置する方式は問題なし -->
+<flux:textarea wire:model="description">{{ $description }}</flux:textarea>### コンポーネント選択ガイド
+```
+
+| コンポーネント | Flux UI | 標準HTML | 推奨 | 備考 |
+|---|---|---|---|---|
+| テキスト入力 | `<flux:input>` | `<input>` | Flux UI | 問題なく動作 |
+| テキストエリア | `<flux:textarea>` | `<textarea>` | Flux UI | タグ間に初期値を配置 |
+| セレクトボックス | `<flux:select>` | `<select>` | どちらでも | シンプルならFlux、複雑なら標準HTML |
+| ラジオボタン | `<flux:radio>` | `<input type="radio">` | **標準HTML** | Flux UIでエラーが発生しやすい |
+| チェックボックス | `<flux:checkbox>` | `<input type="checkbox">` | 要検証 | 問題が出たら標準HTMLに切り替え |
+
+### ラジオボタンの実装例
+
+#### 標準HTML + Tailwind CSS（推奨）
+
+```php
+<flux:field>
+    <flux:label>性別</flux:label>
+    <div class="flex gap-6">
+        <label class="flex items-center gap-2">
+            <input type="radio" wire:model="gender" value="male"
+                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span>男性</span>
+        </label>
+        <label class="flex items-center gap-2">
+            <input type="radio" wire:model="gender" value="female"
+                class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span>女性</span>
+        </label>
+    </div>
+    <flux:error name="gender" />
+</flux:field>
+```
+
+### 動的セレクトボックスの実装
+
+#### 年月日のような動的選択肢
+
+```php
+<!-- 標準HTMLセレクトボックスを使用 -->
+<div class="flex gap-4">
+    <select wire:model.live="birthYear"
+        class="w-full rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+        <option value="">年</option>
+        @foreach ($this->years as $year)
+            <option value="{{ $year }}">{{ $year }}年</option>
+        @endforeach
+    </select>
+    
+    <select wire:model.live="birthMonth"
+        class="w-full rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+        <option value="">月</option>
+        @foreach ($this->months as $month)
+            <option value="{{ $month }}">{{ $month }}月</option>
+        @endforeach
+    </select>
+    
+    <select wire:model="birthDay"
+        class="w-full rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+        <option value="">日</option>
+        @php
+            $maxDay = 31;
+            if ($birthYear && $birthMonth) {
+                // wire:modelで取得した値は文字列なので、整数にキャスト
+                $maxDay = (int) date('t', mktime(0, 0, 0, (int) $birthMonth, 1, (int) $birthYear));
+            }
+        @endphp
+        @for ($day = 1; $day <= $maxDay; $day++)
+            <option value="{{ $day }}">{{ $day }}日</option>
+        @endfor
+    </select>
+</div>
+```
+
+#### 重要: wire:modelで取得した値の型キャスト
+
+```php
+// セレクトボックスから取得した値は文字列なので、数値計算の前に型キャスト必須
+$updatedBirthMonth = function () {
+    if ($this->birthYear !== null && $this->birthMonth !== null) {
+        // (int) でキャストしないとTypeErrorが発生
+        $maxDay = (int) date('t', mktime(0, 0, 0, (int) $this->birthMonth, 1, (int) $this->birthYear));
+        if ($this->birthDay !== null && $this->birthDay > $maxDay) {
+            $this->birthDay = null;
+        }
+    }
+};
+```
+
+### トラブルシューティング
+
+#### JavaScriptエラー: "...is not a function"
+
+**原因**: Flux UIコンポーネントに初期値属性（`:checked`, `@selected`, `value`）を設定している
+**解決**: これらの属性を削除し、`wire:model`に初期値管理を任せる
+
+#### TypeError: Argument must be of type ?int, string given
+
+**原因**: `wire:model`で取得した値（文字列）を数値関数に渡している
+**解決**: `(int)` で明示的に型キャストする
+
+#### 初期データが表示されない
+
+**原因**: アセットのキャッシュ、または`@selected`などの削除漏れ
+**解決**: 
+1. すべてのFlux UIコンポーネントから初期値属性を削除
+2. `sail npm run build` でアセットを再ビルド
+3. ブラウザをハードリフレッシュ（`Cmd+Shift+R`）
+
+## パフォーマンス
+- N+1問題回避（先読み込み使用）
+- `computed`プロパティの適切な活用
+- 不要な再レンダリング防止
+
+## レイアウト管理
+
+### フルページコンポーネントのレイアウト指定
+- `layout()`と`title()`ヘルパーを使用してレイアウトを指定
+- テンプレート内で`<x-layouts.app>`を直接使用しない（二重レイアウトの原因）
+
+## Voltコンポーネント内での関数呼び出し
+
+### 重要な注意事項
+Voltのfunctional APIで定義した関数は、Bladeテンプレート内で呼び出す際に**必ず `$this->` を使用**してアクセスする必要があります。
+
+### NG例（エラーが発生）
+```php
+<?php
+$getStatusLabel = function (string $status): string {
+    return match ($status) {
+        'applied' => '応募中',
+        default => '不明',
+    };
+};
+?>
+
+<div>
+    <!-- 直接呼び出しはエラー -->
+    {{ $getStatusLabel($status) }}
+</div>
+```
+
+### OK例（正しい実装）
+```php
+<?php
+$getStatusLabel = function (string $status): string {
+    return match ($status) {
+        'applied' => '応募中',
+        default => '不明',
+    };
+};
+?>
+
+<div>
+    <!-- $this-> を使用して呼び出し -->
+    {{ $this->getStatusLabel($status) }}
+</div>
+```
+
+### 適用対象
+- 全ての関数定義（`$functionName = function() { ... }`形式）
+- computed プロパティは既に `$this->` でアクセスするため問題なし
+- state 変数も `$this->` でアクセスするため問題なし
+
+## よくある間違い防止
+
+### NG: use function文の不足
+```php
+<?php
+state(['title' => '']);  // エラー
+?>
+```
+
+### OK: 正しいインポート
+```php
+<?php
+use function Livewire\Volt\{state};
+
+state(['title' => '']);
+?>
+```
+
+### NG: $thisの誤用
+```php
+$save = function () {
+    $items = Item::all();  // 状態として保持されない
+};
+```
+
+### OK: 正しい状態管理
+```php
+$save = function () {
+    $this->items = Item::all();  // 状態を更新
+};
+```
+
+### NG: Alpine.js構文でBlade関数を使用
+```php
+<!-- :href はAlpine.js構文でPHP関数は呼べない -->
+<a :href="route('jobs.show', $job)" wire:navigate>
+```
+
+### OK: Blade構文でroute()を使用
+**ルール**: `route()`, `url()`, `asset()` などのPHPヘルパー関数は必ず `{{ }}` で囲む。`:href` はJavaScript式用。
+```php
+<!-- {{ }} でサーバーサイド評価 -->
+<a href="{{ route('jobs.show', $job) }}" wire:navigate>
+```

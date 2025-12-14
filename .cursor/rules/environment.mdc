@@ -1,0 +1,56 @@
+---
+alwaysApply: true
+---
+
+# 開発環境ルール
+
+## 基本設定
+- プロジェクトタイプ: Laravel 12.x
+- 開発言語: PHP 8.5+
+- データベース: MySQL/MariaDB
+- コンテナ環境: Laravel Sail (Docker)
+
+## 開発ツール
+- バージョン管理: Git
+- 依存関係管理: Composer (バックエンド), npm (フロントエンド)
+- ビルドツール: Vite
+
+## コマンド実行
+- Sailコンテナ経由で実行: `./vendor/bin/sail`
+- 例:
+  - `./vendor/bin/sail artisan migrate`
+  - `./vendor/bin/sail composer install`
+  - `./vendor/bin/sail npm run dev`
+
+## Docker/Sailコマンドの実行権限
+- Docker関連コマンド（`sail`で始まるすべてのコマンド）を実行する際は、`required_permissions: ['network']` を指定
+- サンドボックス環境からDockerに接続するにはネットワーク権限が必要
+- 権限なしでは「Docker is not running」エラーになるが、これは接続できないだけでDockerは起動している可能性がある
+- Docker起動状態が不明な場合は、ユーザーに `sail ps` の実行を依頼して確認
+
+## コーディング規約
+- PSR-12準拠のコードフォーマット
+- Laravel Pintで自動整形（変更確定前に実行必須）
+- 型宣言必須: `declare(strict_types=1);`
+- PHPDocブロック優先、インラインコメント最小限
+- コメントは日本語で記述（PHPDoc、インラインコメントともに）
+- 制御構造には常に中括弧使用（1行でも）
+
+## PHP規約
+- コンストラクタプロパティプロモーション使用
+- 明示的な戻り値の型宣言必須
+- メソッドパラメータに型ヒント必須
+
+## テスト環境
+- Pest v4使用必須
+- 新機能実装時のテスト作成必須
+- テストディレクトリ: `tests/Feature`, `tests/Unit`
+- テスト実行: `./vendor/bin/sail artisan test`
+
+## 言語使用規則
+- laravel-langから日本語言語ファイル使用
+- UI: 日本語
+- コード（変数名、メソッド名、クラス名など）: 英語
+- コメント（PHPDoc、インラインコメント）: 日本語
+- バリデーションメッセージ: 日本語
+- エラーメッセージ: 日本語
