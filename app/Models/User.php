@@ -61,4 +61,26 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+
+    /**
+     * このユーザーが作成した言伝
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Memo>
+     */
+    public function memos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Memo::class);
+    }
+
+    /**
+     * このユーザーが受信した言伝（フェーズ2）
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Memo>
+     */
+    public function receivedMemos(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Memo::class, 'memo_recipients')
+            ->withPivot('is_favorite', 'read_at')
+            ->withTimestamps();
+    }
 }
