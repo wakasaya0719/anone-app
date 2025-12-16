@@ -58,7 +58,38 @@ class User extends Authenticatable
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * このユーザーが作成した言伝
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Memo>
+     */
+    public function memos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Memo::class);
+    }
+
+    /**
+     * このユーザーがお気に入り登録した言伝（フェーズ2）
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Memo>
+     */
+    public function favorites(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Memo::class, 'favorites')
+            ->withTimestamps();
+    }
+
+    /**
+     * このユーザーが登録した受信者（フェーズ2）
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Recipient>
+     */
+    public function recipients(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Recipient::class);
     }
 }
