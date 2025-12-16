@@ -59,7 +59,7 @@ test('公開済みスコープが機能する', function () {
     $publishedMemos = Memo::published()->get();
 
     expect($publishedMemos)->toHaveCount(3)
-        ->and($publishedMemos->every(fn ($memo) => $memo->status === MemoStatus::PUBLISHED))->toBeTrue();
+        ->and($publishedMemos->every(fn($memo) => $memo->status === MemoStatus::PUBLISHED))->toBeTrue();
 });
 
 test('下書きスコープが機能する', function () {
@@ -69,7 +69,7 @@ test('下書きスコープが機能する', function () {
     $draftMemos = Memo::draft()->get();
 
     expect($draftMemos)->toHaveCount(2)
-        ->and($draftMemos->every(fn ($memo) => $memo->status === MemoStatus::DRAFT))->toBeTrue();
+        ->and($draftMemos->every(fn($memo) => $memo->status === MemoStatus::DRAFT))->toBeTrue();
 });
 
 test('isPublishedメソッドが正しく判定する', function () {
@@ -103,5 +103,5 @@ test('ユーザーは複数の言伝を持つ', function () {
     Memo::factory()->count(3)->create(['user_id' => $user->id]);
 
     expect($user->memos)->toHaveCount(3)
-        ->and($user->memos->every(fn ($memo) => $memo->user_id === $user->id))->toBeTrue();
+        ->and($user->memos->every(fn($memo) => $memo->user_id === $user->id))->toBeTrue();
 });
