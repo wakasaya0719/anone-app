@@ -73,14 +73,23 @@ class User extends Authenticatable
     }
 
     /**
-     * このユーザーが受信した言伝（フェーズ2）
+     * このユーザーがお気に入り登録した言伝（フェーズ2）
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Memo>
      */
-    public function receivedMemos(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function favorites(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Memo::class, 'memo_recipients')
-            ->withPivot('is_favorite', 'read_at')
+        return $this->belongsToMany(Memo::class, 'favorites')
             ->withTimestamps();
+    }
+
+    /**
+     * このユーザーが登録した受信者（フェーズ2）
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Recipient>
+     */
+    public function recipients(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Recipient::class);
     }
 }
