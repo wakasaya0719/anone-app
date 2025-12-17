@@ -16,6 +16,7 @@ state([
     'memo_date' => null,
     'sender' => '',
     'recipient' => '',
+    'recipient_age' => null,
     'status' => '',
 ]);
 
@@ -30,6 +31,7 @@ mount(function (Memo $memo) {
     $this->memo_date = $memo->memo_date?->format('Y-m-d');
     $this->sender = $memo->sender ?? '';
     $this->recipient = $memo->recipient ?? '';
+    $this->recipient_age = $memo->recipient_age;
     $this->status = $memo->status->value;
 });
 
@@ -41,6 +43,7 @@ rules([
     'memo_date' => 'nullable|date|before_or_equal:today',
     'sender' => 'nullable|string|max:100',
     'recipient' => 'nullable|string|max:100',
+    'recipient_age' => 'nullable|integer|min:0|max:150',
     'status' => 'required|string',
 ]);
 
@@ -69,6 +72,7 @@ $update = function () {
         'memo_date' => $validated['memo_date'] ?: null,
         'sender' => $validated['sender'] ?: null,
         'recipient' => $validated['recipient'] ?: null,
+        'recipient_age' => $validated['recipient_age'] ?: null,
         'status' => $validated['status'],
         'published_at' => $publishedAt,
     ]);
@@ -127,17 +131,17 @@ $publish = function () {
     </div>
 
     {{-- フォーム --}}
-    <form wire:submit="update" class="space-y-6">
+    <form wire:submit="update" class="space-y-8">
         <div class="rounded-2xl border border-warmth-200 bg-white p-8 shadow-md dark:border-soft-700 dark:bg-soft-800">
             {{-- タイトル --}}
-            <flux:field>
+            <flux:field class="space-y-2">
                 <flux:label>タイトル <span class="text-red-500">*</span></flux:label>
                 <flux:input wire:model="title" type="text" placeholder="例：今日の出来事" />
                 <flux:error name="title" />
             </flux:field>
 
             {{-- 本文 --}}
-            <flux:field>
+            <flux:field class="space-y-2">
                 <flux:label>本文 <span class="text-red-500">*</span></flux:label>
                 <flux:textarea wire:model="content" rows="10" placeholder="伝えたいことを書いてください...">{{ $content }}</flux:textarea>
                 <flux:error name="content" />
@@ -147,7 +151,7 @@ $publish = function () {
             </flux:field>
 
             {{-- 感情タグ --}}
-            <flux:field>
+            <flux:field class="space-y-2">
                 <flux:label>感情タグ</flux:label>
                 <flux:select wire:model="emotion_tag" placeholder="感情を選択...">
                     <option value="">なし</option>
@@ -159,32 +163,35 @@ $publish = function () {
             </flux:field>
 
             {{-- 投稿日 --}}
-            <flux:field>
+            <flux:field class="space-y-2">
                 <flux:label>投稿日（思い出の日付）</flux:label>
                 <flux:input wire:model="memo_date" type="date" max="{{ today()->format('Y-m-d') }}" />
                 <flux:error name="memo_date" />
-                <flux:description>
-                    この言伝に関連する日付（過去の日付のみ）
-                </flux:description>
             </flux:field>
 
-            {{-- 送信者・受信者 --}}
-            <div class="grid gap-4 md:grid-cols-2">
-                <flux:field>
+            {{-- 送信者・受信者・年齢 --}}
+            <div class="grid gap-4 md:grid-cols-3">
+                <flux:field class="space-y-2">
                     <flux:label>送信者（From）</flux:label>
                     <flux:input wire:model="sender" type="text" placeholder="例：お父さん" />
                     <flux:error name="sender" />
                 </flux:field>
 
-                <flux:field>
+                <flux:field class="space-y-2">
                     <flux:label>受信者（To）</flux:label>
                     <flux:input wire:model="recipient" type="text" placeholder="例：太郎" />
                     <flux:error name="recipient" />
                 </flux:field>
+
+                <flux:field class="space-y-2">
+                    <flux:label>年齢</flux:label>
+                    <flux:input wire:model="recipient_age" type="number" min="0" max="150" placeholder="例：5" />
+                    <flux:error name="recipient_age" />
+                </flux:field>
             </div>
 
             {{-- ステータス --}}
-            <flux:field>
+            <flux:field class="space-y-2">
                 <flux:label>ステータス <span class="text-coral-500">✱</span></flux:label>
                 <div class="flex gap-6">
                     <label class="flex items-center gap-2">

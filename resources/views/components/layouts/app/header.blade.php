@@ -12,8 +12,12 @@
             </a>
 
             <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
+                <flux:navbar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                    ダッシュボード
+                </flux:navbar.item>
+
+                <flux:navbar.item icon="chat-bubble-left-right" :href="route('memos.index')" :current="request()->routeIs('memos.*')" wire:navigate>
+                    言伝
                 </flux:navbar.item>
             </flux:navbar>
 
@@ -97,9 +101,13 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')">
-                    <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                    {{ __('Dashboard') }}
+                <flux:navlist.group heading="メイン">
+                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                        ダッシュボード
+                    </flux:navlist.item>
+
+                    <flux:navlist.item icon="chat-bubble-left-right" :href="route('memos.index')" :current="request()->routeIs('memos.*')" wire:navigate>
+                        言伝
                     </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>

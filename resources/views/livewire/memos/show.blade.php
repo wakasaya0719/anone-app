@@ -127,6 +127,11 @@ $delete = function () {
                             </div>
                             <p class="text-lg font-semibold text-coral-900 dark:text-coral-100">
                                 {{ $memo->recipient }}
+                                @if ($memo->recipient_age)
+                                    <span class="ml-2 inline-flex items-center rounded-full bg-coral-100 px-3 py-1 text-sm font-medium text-coral-800 dark:bg-coral-900/30 dark:text-coral-200">
+                                        {{ $memo->recipient_age }}歳
+                                    </span>
+                                @endif
                             </p>
                         </div>
                     @endif

@@ -37,6 +37,7 @@ class Memo extends Model
         'memo_date',
         'sender',
         'recipient',
+        'recipient_age',
         'status',
         'published_at',
     ];

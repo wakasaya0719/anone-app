@@ -12,8 +12,14 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                <flux:navlist.group heading="メイン" class="grid">
+                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                        ダッシュボード
+                    </flux:navlist.item>
+
+                    <flux:navlist.item icon="chat-bubble-left-right" :href="route('memos.index')" :current="request()->routeIs('memos.*')" wire:navigate>
+                        言伝
+                    </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 

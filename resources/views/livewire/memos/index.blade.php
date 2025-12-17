@@ -9,7 +9,7 @@ layout('components.layouts.app');
 title('言伝一覧');
 
 // 状態管理
-state(['search' => '', 'status' => '', 'emotionTag' => '']);
+state(['search' => '', 'recipient' => '', 'emotionTag' => '', 'status' => '']);
 
 // 言伝一覧を取得（検索・フィルター対応）
 $memos = computed(function () {
@@ -21,14 +21,29 @@ $memos = computed(function () {
                   ->orWhere('content', 'like', "%{$this->search}%");
             });
         })
-        ->when($this->status, function ($query) {
-            $query->where('status', $this->status);
+        ->when($this->recipient, function ($query) {
+            $query->where('recipient', 'like', "%{$this->recipient}%");
         })
         ->when($this->emotionTag, function ($query) {
             $query->where('emotion_tag', $this->emotionTag);
         })
+        ->when($this->status, function ($query) {
+            $query->where('status', $this->status);
+        })
         ->latest('created_at')
         ->paginate(20);
+});
+
+// ユニークな受信者リストを取得
+$recipients = computed(function () {
+    return Memo::query()
+        ->where('user_id', auth()->id())
+        ->whereNotNull('recipient')
+        ->where('recipient', '!=', '')
+        ->distinct()
+        ->pluck('recipient')
+        ->sort()
+        ->values();
 });
 
 // ステータスラベル取得
@@ -96,28 +111,47 @@ $delete = function (Memo $memo) {
 
     {{-- 検索・フィルター - カードスタイルに --}}
     <div class="rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/90">
-        <div class="grid gap-4 md:grid-cols-3">
-            <flux:input
-                wire:model.live.debounce.300ms="search"
-                type="search"
-                placeholder="タイトルや本文で検索..."
-                icon="magnifying-glass"
-                class="rounded-xl"
-            />
+        <div class="flex gap-4">
+            {{-- フリー検索（広め） --}}
+            <div class="flex-1">
+                <flux:input
+                    wire:model.live.debounce.300ms="search"
+                    type="search"
+                    placeholder="タイトルや本文で検索..."
+                    icon="magnifying-glass"
+                    class="rounded-xl"
+                />
+            </div>
 
-            <flux:select wire:model.live="status" placeholder="すべてのステータス" class="rounded-xl">
-                <option value="">すべてのステータス</option>
-                @foreach (MemoStatus::cases() as $statusOption)
-                    <option value="{{ $statusOption->value }}">{{ $statusOption->label() }}</option>
-                @endforeach
-            </flux:select>
+            {{-- 受信者フィルター（狭め） --}}
+            <div class="w-48">
+                <flux:select wire:model.live="recipient" placeholder="すべての受信者" class="rounded-xl">
+                    <option value="">すべての受信者</option>
+                    @foreach ($this->recipients as $recipientOption)
+                        <option value="{{ $recipientOption }}">{{ $recipientOption }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
 
-            <flux:select wire:model.live="emotionTag" placeholder="すべての感情" class="rounded-xl">
-                <option value="">すべての感情</option>
-                @foreach (EmotionTag::cases() as $tag)
-                    <option value="{{ $tag->value }}">{{ $tag->emoji() }} {{ $tag->label() }}</option>
-                @endforeach
-            </flux:select>
+            {{-- 感情タグフィルター（狭め） --}}
+            <div class="w-48">
+                <flux:select wire:model.live="emotionTag" placeholder="すべての感情" class="rounded-xl">
+                    <option value="">すべての感情</option>
+                    @foreach (EmotionTag::cases() as $tag)
+                        <option value="{{ $tag->value }}">{{ $tag->emoji() }} {{ $tag->label() }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            {{-- ステータスフィルター（狭め） --}}
+            <div class="w-48">
+                <flux:select wire:model.live="status" placeholder="すべてのステータス" class="rounded-xl">
+                    <option value="">すべてのステータス</option>
+                    @foreach (MemoStatus::cases() as $statusOption)
+                        <option value="{{ $statusOption->value }}">{{ $statusOption->label() }}</option>
+                    @endforeach
+                </flux:select>
+            </div>
         </div>
     </div>
 
@@ -180,7 +214,14 @@ $delete = function (Memo $memo) {
                                     @if ($memo->recipient)
                                         <span class="flex items-center gap-2 text-coral-700 dark:text-coral-300">
                                             <span>🎁</span>
-                                            <span>{{ $memo->recipient }}へ</span>
+                                            <span>
+                                                {{ $memo->recipient }}へ
+                                                @if ($memo->recipient_age)
+                                                    <span class="ml-1 inline-flex items-center rounded-full bg-coral-100 px-2 py-0.5 text-xs font-medium text-coral-800 dark:bg-coral-900/30 dark:text-coral-200">
+                                                        {{ $memo->recipient_age }}歳
+                                                    </span>
+                                                @endif
+                                            </span>
                                         </span>
                                     @endif
                                 </div>
@@ -226,21 +267,21 @@ $delete = function (Memo $memo) {
             <div class="mx-auto max-w-md">
                 <span class="text-6xl">📮</span>
                 <h3 class="mt-6 text-xl font-bold text-warmth-800 dark:text-warmth-200">
-                    @if ($search || $status || $emotionTag)
+                    @if ($search || $recipient || $status || $emotionTag)
                         見つかりませんでした
                     @else
                         まだ言伝がありません
                     @endif
                 </h3>
                 <p class="mt-3 leading-relaxed text-soft-600 dark:text-soft-400">
-                    @if ($search || $status || $emotionTag)
+                    @if ($search || $recipient || $status || $emotionTag)
                         検索条件を変えて、もう一度お試しください。
                     @else
                         心に残る言葉を、未来の大切な人へ届けましょう。<br>
                         最初の言伝を作成してみませんか？
                     @endif
                 </p>
-                @if (!$search && !$status && !$emotionTag)
+                @if (!$search && !$recipient && !$status && !$emotionTag)
                     <flux:button 
                         href="{{ route('memos.create') }}" 
                         wire:navigate 
