@@ -3,7 +3,7 @@
 use function Livewire\Volt\{layout, mount, state, title};
 use App\Models\Memo;
 
-layout('layouts.app');
+layout('components.layouts.app');
 
 // 状態管理
 state(['memo']);

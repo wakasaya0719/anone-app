@@ -5,7 +5,7 @@ use App\Enums\EmotionTag;
 use App\Enums\MemoStatus;
 use App\Models\Memo;
 
-layout('layouts.app');
+layout('components.layouts.app');
 
 // 状態管理
 state([

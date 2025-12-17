@@ -5,7 +5,7 @@ use App\Models\Memo;
 use App\Enums\MemoStatus;
 use App\Enums\EmotionTag;
 
-layout('layouts.app');
+layout('components.layouts.app');
 title('言伝一覧');
 
 // 状態管理
