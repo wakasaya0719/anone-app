@@ -13,6 +13,13 @@ Route::view('dashboard', 'dashboard')
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
+    // 言伝（Memos）管理
+    Volt::route('memos', 'memos.index')->name('memos.index');
+    Volt::route('memos/create', 'memos.create')->name('memos.create');
+    Volt::route('memos/{memo}', 'memos.show')->name('memos.show');
+    Volt::route('memos/{memo}/edit', 'memos.edit')->name('memos.edit');
+
+    // 設定
     Route::redirect('settings', 'settings/profile');
 
     Volt::route('settings/profile', 'settings.profile')->name('profile.edit');

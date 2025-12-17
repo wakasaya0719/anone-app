@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\EmotionTag;
+use App\Enums\MemoStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -17,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Memo extends Model
 {
+    use HasFactory;
     use SoftDeletes;
 
     /**
@@ -27,21 +32,25 @@ class Memo extends Model
     protected $fillable = [
         'user_id',
         'title',
-        'body',
+        'content',
+        'emotion_tag',
+        'memo_date',
         'sender',
         'recipient',
-        'memo_date',
+        'status',
         'published_at',
     ];
 
     /**
-     * 日付としてキャストする属性
+     * 属性のキャスト
      *
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return [
+            'emotion_tag' => EmotionTag::class,
+            'status' => MemoStatus::class,
             'memo_date' => 'date',
             'published_at' => 'datetime',
             'deleted_at' => 'datetime',
@@ -59,25 +68,33 @@ class Memo extends Model
     }
 
     /**
-     * この言伝に付与された感情タグ
+     * この言伝に添付された画像（フェーズ2）
      *
-     * @return BelongsToMany<EmotionTag, $this>
+     * @return HasMany<Image, $this>
      */
-    public function emotionTags(): BelongsToMany
+    public function images(): HasMany
     {
-        return $this->belongsToMany(EmotionTag::class, 'memo_emotion_tag')
-            ->withTimestamps();
+        return $this->hasMany(Image::class);
     }
 
     /**
-     * この言伝の受信者（フェーズ2）
+     * この言伝の配信スケジュール（フェーズ2）
+     *
+     * @return HasMany<ScheduledDelivery, $this>
+     */
+    public function scheduledDeliveries(): HasMany
+    {
+        return $this->hasMany(ScheduledDelivery::class);
+    }
+
+    /**
+     * この言伝をお気に入り登録したユーザー（フェーズ2）
      *
      * @return BelongsToMany<User, $this>
      */
-    public function recipients(): BelongsToMany
+    public function favoritedBy(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'memo_recipients')
-            ->withPivot('is_favorite', 'read_at')
+        return $this->belongsToMany(User::class, 'favorites')
             ->withTimestamps();
     }
 
@@ -89,7 +106,7 @@ class Memo extends Model
      */
     public function scopePublished($query)
     {
-        return $query->whereNotNull('published_at');
+        return $query->where('status', MemoStatus::PUBLISHED);
     }
 
     /**
@@ -100,7 +117,7 @@ class Memo extends Model
      */
     public function scopeDraft($query)
     {
-        return $query->whereNull('published_at');
+        return $query->where('status', MemoStatus::DRAFT);
     }
 
     /**
@@ -108,7 +125,7 @@ class Memo extends Model
      */
     public function isPublished(): bool
     {
-        return $this->published_at !== null;
+        return $this->status === MemoStatus::PUBLISHED;
     }
 
     /**
@@ -116,6 +133,6 @@ class Memo extends Model
      */
     public function isDraft(): bool
     {
-        return $this->published_at === null;
+        return $this->status === MemoStatus::DRAFT;
     }
 }

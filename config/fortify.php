@@ -116,7 +116,7 @@ return [
 
     'limiters' => [
         'login' => 'login',
-        'two-factor' => 'two-factor',
+        // 'two-factor' => 'two-factor', // 2FA機能を無効化
     ],
 
     /*
@@ -149,11 +149,12 @@ return [
         Features::emailVerification(),
         // Features::updateProfileInformation(),
         // Features::updatePasswords(),
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-            // 'window' => 0,
-        ]),
+        // 2FA機能を無効化
+        // Features::twoFactorAuthentication([
+        //     'confirm' => true,
+        //     'confirmPassword' => true,
+        //     // 'window' => 0,
+        // ]),
     ],
 
 ];
