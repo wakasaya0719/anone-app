@@ -61,63 +61,86 @@ $delete = function (Memo $memo) {
 
 ?>
 
-<div class="space-y-6">
-    {{-- ヘッダー --}}
-    <div class="flex items-center justify-between">
-        <flux:heading size="xl">言伝一覧</flux:heading>
+<div class="space-y-8 animate-gentle-fade-in">
+    {{-- ヘッダー - より柔らかいスタイル --}}
+    <div class="flex items-center justify-between rounded-2xl bg-white/80 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/80">
+        <div>
+            <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
+                📝 言伝一覧
+            </flux:heading>
+            <p class="mt-2 text-sm text-soft-600 dark:text-soft-400">
+                心を込めた言葉を、未来へ届けましょう
+            </p>
+        </div>
         
-        <flux:button href="{{ route('memos.create') }}" wire:navigate variant="primary" icon="plus">
-            新規作成
+        <flux:button 
+            href="{{ route('memos.create') }}" 
+            wire:navigate 
+            variant="primary" 
+            icon="plus"
+            class="bg-gradient-to-r from-warmth-500 to-coral-500 hover:from-warmth-600 hover:to-coral-600 shadow-md"
+        >
+            新しい言伝を作る
         </flux:button>
     </div>
 
-    {{-- 成功メッセージ --}}
+    {{-- 成功メッセージ - より優しく --}}
     @if (session('message'))
-        <flux:callout variant="success">
-            {{ session('message') }}
-        </flux:callout>
+        <div class="rounded-2xl border-2 border-coral-300 bg-gradient-to-r from-coral-50 to-warmth-50 p-4 shadow-sm dark:border-coral-700 dark:from-soft-800 dark:to-soft-700">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">✨</span>
+                <p class="text-coral-800 dark:text-coral-200">{{ session('message') }}</p>
+            </div>
+        </div>
     @endif
 
-    {{-- 検索・フィルター --}}
-    <div class="grid gap-4 md:grid-cols-3">
-        <flux:input
-            wire:model.live.debounce.300ms="search"
-            type="search"
-            placeholder="タイトルや本文で検索..."
-            icon="magnifying-glass"
-        />
+    {{-- 検索・フィルター - カードスタイルに --}}
+    <div class="rounded-2xl bg-white/90 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/90">
+        <div class="grid gap-4 md:grid-cols-3">
+            <flux:input
+                wire:model.live.debounce.300ms="search"
+                type="search"
+                placeholder="タイトルや本文で検索..."
+                icon="magnifying-glass"
+                class="rounded-xl"
+            />
 
-        <flux:select wire:model.live="status" placeholder="すべてのステータス">
-            <option value="">すべてのステータス</option>
-            @foreach (MemoStatus::cases() as $statusOption)
-                <option value="{{ $statusOption->value }}">{{ $statusOption->label() }}</option>
-            @endforeach
-        </flux:select>
+            <flux:select wire:model.live="status" placeholder="すべてのステータス" class="rounded-xl">
+                <option value="">すべてのステータス</option>
+                @foreach (MemoStatus::cases() as $statusOption)
+                    <option value="{{ $statusOption->value }}">{{ $statusOption->label() }}</option>
+                @endforeach
+            </flux:select>
 
-        <flux:select wire:model.live="emotionTag" placeholder="すべての感情タグ">
-            <option value="">すべての感情タグ</option>
-            @foreach (EmotionTag::cases() as $tag)
-                <option value="{{ $tag->value }}">{{ $tag->emoji() }} {{ $tag->label() }}</option>
-            @endforeach
-        </flux:select>
+            <flux:select wire:model.live="emotionTag" placeholder="すべての感情" class="rounded-xl">
+                <option value="">すべての感情</option>
+                @foreach (EmotionTag::cases() as $tag)
+                    <option value="{{ $tag->value }}">{{ $tag->emoji() }} {{ $tag->label() }}</option>
+                @endforeach
+            </flux:select>
+        </div>
     </div>
 
-    {{-- 言伝一覧 --}}
+    {{-- 言伝一覧 - より温かみのあるカードデザイン --}}
     @if ($this->memos->count() > 0)
-        <div class="space-y-4">
+        <div class="space-y-6">
             @foreach ($this->memos as $memo)
-                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+                <article class="group memo-card">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             {{-- タイトル --}}
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                <a href="{{ route('memos.show', $memo) }}" wire:navigate class="hover:text-blue-600 dark:hover:text-blue-400">
+                            <h3 class="text-xl font-bold text-warmth-800 dark:text-warmth-200">
+                                <a 
+                                    href="{{ route('memos.show', $memo) }}" 
+                                    wire:navigate 
+                                    class="hover:text-warmth-600 dark:hover:text-warmth-400 transition-colors"
+                                >
                                     {{ $memo->title }}
                                 </a>
                             </h3>
 
                             {{-- メタ情報 --}}
-                            <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="mt-3 flex flex-wrap items-center gap-3">
                                 {{-- ステータス --}}
                                 <flux:badge :variant="$this->getStatusColor($memo->status->value)" size="sm">
                                     {{ $this->getStatusLabel($memo->status->value) }}
@@ -125,52 +148,54 @@ $delete = function (Memo $memo) {
 
                                 {{-- 感情タグ --}}
                                 @if ($memo->emotion_tag)
-                                    <span class="rounded-full bg-gray-100 px-3 py-1 text-xs dark:bg-gray-700">
-                                        {{ $this->getEmotionLabel($memo->emotion_tag?->value) }}
+                                    <span class="emotion-tag">
+                                        <span class="text-lg">{{ $memo->emotion_tag->emoji() }}</span>
+                                        <span>{{ $memo->emotion_tag->label() }}</span>
                                     </span>
                                 @endif
 
                                 {{-- 日付 --}}
                                 @if ($memo->memo_date)
-                                    <span class="flex items-center gap-1">
+                                    <span class="flex items-center gap-1.5 text-sm text-soft-600 dark:text-soft-400">
                                         <flux:icon.calendar variant="micro" />
                                         {{ $memo->memo_date->format('Y年n月j日') }}
                                     </span>
                                 @endif
-
-                                {{-- 作成日時 --}}
-                                <span class="flex items-center gap-1">
-                                    <flux:icon.clock variant="micro" />
-                                    {{ $memo->created_at->format('Y/m/d H:i') }}
-                                </span>
                             </div>
 
                             {{-- 本文プレビュー --}}
-                            <p class="mt-3 line-clamp-2 text-gray-700 dark:text-gray-300">
-                                {{ Str::limit($memo->content, 120) }}
+                            <p class="mt-4 line-clamp-3 leading-relaxed text-soft-700 dark:text-soft-300">
+                                {{ Str::limit($memo->content, 150) }}
                             </p>
 
                             {{-- 送受信者情報 --}}
                             @if ($memo->sender || $memo->recipient)
-                                <div class="mt-2 flex gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div class="mt-4 flex gap-6 text-sm">
                                     @if ($memo->sender)
-                                        <span>From: {{ $memo->sender }}</span>
+                                        <span class="flex items-center gap-2 text-warmth-700 dark:text-warmth-300">
+                                            <span>💝</span>
+                                            <span>{{ $memo->sender }}より</span>
+                                        </span>
                                     @endif
                                     @if ($memo->recipient)
-                                        <span>To: {{ $memo->recipient }}</span>
+                                        <span class="flex items-center gap-2 text-coral-700 dark:text-coral-300">
+                                            <span>🎁</span>
+                                            <span>{{ $memo->recipient }}へ</span>
+                                        </span>
                                     @endif
                                 </div>
                             @endif
                         </div>
 
                         {{-- アクションボタン --}}
-                        <div class="ml-4 flex gap-2">
+                        <div class="ml-6 flex flex-col gap-2">
                             <flux:button
                                 href="{{ route('memos.show', $memo) }}"
                                 wire:navigate
                                 variant="ghost"
                                 size="sm"
                                 icon="eye"
+                                class="hover:bg-warmth-100 dark:hover:bg-soft-700"
                             >
                                 詳細
                             </flux:button>
@@ -181,47 +206,52 @@ $delete = function (Memo $memo) {
                                 variant="ghost"
                                 size="sm"
                                 icon="pencil"
+                                class="hover:bg-warmth-100 dark:hover:bg-soft-700"
                             >
                                 編集
                             </flux:button>
-
-                            <flux:button
-                                wire:click="delete({{ $memo->id }})"
-                                wire:confirm="本当に削除しますか？この操作は取り消せません。"
-                                variant="ghost"
-                                size="sm"
-                                icon="trash"
-                                class="text-red-600 hover:text-red-700 dark:text-red-400"
-                            >
-                                削除
-                            </flux:button>
                         </div>
                     </div>
-                </div>
+                </article>
             @endforeach
         </div>
 
         {{-- ページネーション --}}
-        <div class="mt-6">
+        <div class="mt-8">
             {{ $this->memos->links() }}
         </div>
     @else
-        {{-- 空状態 --}}
-        <div class="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center dark:border-gray-700">
-            <flux:icon.document-text class="mx-auto h-12 w-12 text-gray-400" />
-            <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">言伝がありません</h3>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-                @if ($search || $status || $emotionTag)
-                    検索条件に一致する言伝が見つかりませんでした。
-                @else
-                    最初の言伝を作成しましょう。
+        {{-- 空状態 - より温かみのある表現 --}}
+        <div class="rounded-2xl border-2 border-dashed border-warmth-300 bg-gradient-to-br from-warmth-50 to-coral-50 p-16 text-center dark:border-soft-600 dark:from-soft-800 dark:to-soft-700">
+            <div class="mx-auto max-w-md">
+                <span class="text-6xl">📮</span>
+                <h3 class="mt-6 text-xl font-bold text-warmth-800 dark:text-warmth-200">
+                    @if ($search || $status || $emotionTag)
+                        見つかりませんでした
+                    @else
+                        まだ言伝がありません
+                    @endif
+                </h3>
+                <p class="mt-3 leading-relaxed text-soft-600 dark:text-soft-400">
+                    @if ($search || $status || $emotionTag)
+                        検索条件を変えて、もう一度お試しください。
+                    @else
+                        心に残る言葉を、未来の大切な人へ届けましょう。<br>
+                        最初の言伝を作成してみませんか？
+                    @endif
+                </p>
+                @if (!$search && !$status && !$emotionTag)
+                    <flux:button 
+                        href="{{ route('memos.create') }}" 
+                        wire:navigate 
+                        variant="primary" 
+                        icon="plus" 
+                        class="mt-6 bg-gradient-to-r from-warmth-500 to-coral-500 shadow-md"
+                    >
+                        最初の言伝を作る
+                    </flux:button>
                 @endif
-            </p>
-            @if (!$search && !$status && !$emotionTag)
-                <flux:button href="{{ route('memos.create') }}" wire:navigate variant="primary" icon="plus" class="mt-4">
-                    新規作成
-                </flux:button>
-            @endif
+            </div>
         </div>
     @endif
 </div>

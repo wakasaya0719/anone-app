@@ -92,22 +92,35 @@ $publish = function () {
 
 ?>
 
-<div class="space-y-6">
+<div class="space-y-8 animate-gentle-fade-in">
     {{-- ヘッダー --}}
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between rounded-2xl bg-white/80 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/80">
         <div>
-            <flux:heading size="xl">言伝編集</flux:heading>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                言伝の内容を編集します
+            <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
+                ✏️ 言伝編集
+            </flux:heading>
+            <p class="mt-2 text-sm text-soft-600 dark:text-soft-400">
+                大切な言葉を磨きましょう
             </p>
         </div>
 
         <div class="flex gap-2">
-            <flux:button href="{{ route('memos.show', $memo) }}" wire:navigate variant="ghost" icon="arrow-left">
+            <flux:button 
+                href="{{ route('memos.show', $memo) }}" 
+                wire:navigate 
+                variant="ghost" 
+                icon="arrow-left"
+                class="hover:bg-warmth-100 dark:hover:bg-soft-700"
+            >
                 詳細に戻る
             </flux:button>
 
-            <flux:button href="{{ route('memos.index') }}" wire:navigate variant="ghost">
+            <flux:button 
+                href="{{ route('memos.index') }}" 
+                wire:navigate 
+                variant="ghost"
+                class="hover:bg-warmth-100 dark:hover:bg-soft-700"
+            >
                 一覧に戻る
             </flux:button>
         </div>
@@ -115,7 +128,7 @@ $publish = function () {
 
     {{-- フォーム --}}
     <form wire:submit="update" class="space-y-6">
-        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+        <div class="rounded-2xl border border-warmth-200 bg-white p-8 shadow-md dark:border-soft-700 dark:bg-soft-800">
             {{-- タイトル --}}
             <flux:field>
                 <flux:label>タイトル <span class="text-red-500">*</span></flux:label>
@@ -172,46 +185,63 @@ $publish = function () {
 
             {{-- ステータス --}}
             <flux:field>
-                <flux:label>ステータス <span class="text-red-500">*</span></flux:label>
+                <flux:label>ステータス <span class="text-coral-500">✱</span></flux:label>
                 <div class="flex gap-6">
                     <label class="flex items-center gap-2">
                         <input type="radio" wire:model="status" value="{{ MemoStatus::DRAFT->value }}"
-                            class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                            class="h-4 w-4 border-warmth-300 text-warmth-600 focus:ring-warmth-500"
                             @disabled($memo->status === MemoStatus::PUBLISHED)>
-                        <span>下書き</span>
+                        <span class="text-soft-700 dark:text-soft-300">📄 下書き</span>
                     </label>
                     <label class="flex items-center gap-2">
                         <input type="radio" wire:model="status" value="{{ MemoStatus::PUBLISHED->value }}"
-                            class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span>公開</span>
+                            class="h-4 w-4 border-warmth-300 text-warmth-600 focus:ring-warmth-500">
+                        <span class="text-soft-700 dark:text-soft-300">🌟 公開</span>
                     </label>
                 </div>
                 <flux:error name="status" />
                 @if ($memo->status === MemoStatus::PUBLISHED)
-                    <flux:description>
-                        公開済みの言伝を下書きに戻すことはできません。
+                    <flux:description class="text-coral-600 dark:text-coral-400">
+                        💡 公開済みの言伝を下書きに戻すことはできません。
                     </flux:description>
                 @endif
             </flux:field>
         </div>
 
         {{-- アクションボタン --}}
-        <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
-            <div class="text-sm text-gray-600 dark:text-gray-400">
-                <span class="text-red-500">*</span> は必須項目です
+        <div class="flex items-center justify-between rounded-2xl border border-warmth-200 bg-gradient-to-r from-warmth-50 to-coral-50 p-6 shadow-sm dark:border-soft-700 dark:from-soft-800 dark:to-soft-700">
+            <div class="flex items-center gap-2 text-sm text-soft-600 dark:text-soft-400">
+                <span class="text-coral-500">✱</span>
+                <span>は必須項目です</span>
             </div>
 
             <div class="flex gap-3">
                 @if ($memo->status === MemoStatus::DRAFT)
-                    <flux:button type="button" wire:click="saveDraft" variant="ghost">
-                        下書き保存
+                    <flux:button 
+                        type="button" 
+                        wire:click="saveDraft" 
+                        variant="ghost"
+                        class="hover:bg-warmth-100 dark:hover:bg-soft-700"
+                    >
+                        📄 下書き保存
                     </flux:button>
 
-                    <flux:button type="button" wire:click="publish" variant="primary" icon="paper-airplane">
+                    <flux:button 
+                        type="button" 
+                        wire:click="publish" 
+                        variant="primary" 
+                        icon="paper-airplane"
+                        class="bg-gradient-to-r from-warmth-500 to-coral-500 hover:from-warmth-600 hover:to-coral-600 shadow-md"
+                    >
                         公開する
                     </flux:button>
                 @else
-                    <flux:button type="submit" variant="primary" icon="check">
+                    <flux:button 
+                        type="submit" 
+                        variant="primary" 
+                        icon="check"
+                        class="bg-gradient-to-r from-warmth-500 to-coral-500 hover:from-warmth-600 hover:to-coral-600 shadow-md"
+                    >
                         更新する
                     </flux:button>
                 @endif

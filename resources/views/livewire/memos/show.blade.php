@@ -26,15 +26,27 @@ $delete = function () {
 
 ?>
 
-<div class="space-y-6">
+<div class="space-y-6 animate-gentle-fade-in">
     {{-- ヘッダー --}}
-    <div class="flex items-center justify-between">
-        <flux:button href="{{ route('memos.index') }}" wire:navigate variant="ghost" icon="arrow-left">
+    <div class="flex items-center justify-between rounded-2xl bg-white/80 p-4 shadow-md backdrop-blur-sm dark:bg-soft-800/80">
+        <flux:button 
+            href="{{ route('memos.index') }}" 
+            wire:navigate 
+            variant="ghost" 
+            icon="arrow-left"
+            class="hover:bg-warmth-100 dark:hover:bg-soft-700"
+        >
             一覧に戻る
         </flux:button>
 
         <div class="flex gap-2">
-            <flux:button href="{{ route('memos.edit', $memo) }}" wire:navigate variant="primary" icon="pencil">
+            <flux:button 
+                href="{{ route('memos.edit', $memo) }}" 
+                wire:navigate 
+                variant="primary" 
+                icon="pencil"
+                class="bg-gradient-to-r from-warmth-500 to-coral-500 shadow-md"
+            >
                 編集
             </flux:button>
 
@@ -43,88 +55,79 @@ $delete = function () {
                 wire:confirm="本当に削除しますか？この操作は取り消せません。"
                 variant="danger"
                 icon="trash"
+                class="shadow-md"
             >
                 削除
             </flux:button>
         </div>
     </div>
 
-    {{-- メインコンテンツ --}}
-    <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    {{-- メインコンテンツ - より温かみのあるデザイン --}}
+    <div class="overflow-hidden rounded-2xl border border-warmth-200 bg-white shadow-lg dark:border-soft-700 dark:bg-soft-800">
         {{-- ヘッダー部分 --}}
-        <div class="border-b border-gray-200 p-6 dark:border-gray-700">
-            <div class="flex items-start justify-between">
-                <div class="flex-1">
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        {{ $memo->title }}
-                    </h1>
+        <div class="border-b border-warmth-200 bg-gradient-to-r from-warmth-50 to-coral-50 p-8 dark:border-soft-700 dark:from-soft-800 dark:to-soft-700">
+            <h1 class="text-3xl font-bold text-warmth-800 dark:text-warmth-200">
+                {{ $memo->title }}
+            </h1>
 
-                    {{-- メタ情報 --}}
-                    <div class="mt-4 flex flex-wrap items-center gap-3">
-                        {{-- ステータス --}}
-                        <flux:badge :variant="$memo->status->color()" size="sm">
-                            {{ $memo->status->label() }}
-                        </flux:badge>
+            {{-- メタ情報 --}}
+            <div class="mt-6 flex flex-wrap items-center gap-4">
+                {{-- ステータス --}}
+                <flux:badge :variant="$memo->status->color()" size="sm" class="shadow-sm">
+                    {{ $memo->status->label() }}
+                </flux:badge>
 
-                        {{-- 感情タグ --}}
-                        @if ($memo->emotion_tag)
-                            <div class="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 dark:bg-gray-700">
-                                <span class="text-lg">{{ $memo->emotion_tag->emoji() }}</span>
-                                <span class="text-sm text-gray-700 dark:text-gray-300">
-                                    {{ $memo->emotion_tag->label() }}
-                                </span>
-                            </div>
-                        @endif
+                {{-- 感情タグ --}}
+                @if ($memo->emotion_tag)
+                    <span class="emotion-tag">
+                        <span class="text-xl">{{ $memo->emotion_tag->emoji() }}</span>
+                        <span>{{ $memo->emotion_tag->label() }}</span>
+                    </span>
+                @endif
 
-                        {{-- 日付 --}}
-                        @if ($memo->memo_date)
-                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <flux:icon.calendar variant="micro" />
-                                <span>{{ $memo->memo_date->format('Y年n月j日') }}</span>
-                            </div>
-                        @endif
-
-                        {{-- 公開日時 --}}
-                        @if ($memo->published_at)
-                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <flux:icon.globe-alt variant="micro" />
-                                <span>{{ $memo->published_at->format('Y年n月j日 H:i') }} 公開</span>
-                            </div>
-                        @endif
-
-                        {{-- 作成日時 --}}
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <flux:icon.clock variant="micro" />
-                            <span>{{ $memo->created_at->format('Y年n月j日 H:i') }} 作成</span>
-                        </div>
-
-                        {{-- 更新日時 --}}
-                        @if ($memo->updated_at->ne($memo->created_at))
-                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <flux:icon.pencil variant="micro" />
-                                <span>{{ $memo->updated_at->format('Y年n月j日 H:i') }} 更新</span>
-                            </div>
-                        @endif
+                {{-- 日付 --}}
+                @if ($memo->memo_date)
+                    <div class="flex items-center gap-2 text-sm text-soft-600 dark:text-soft-400">
+                        <flux:icon.calendar variant="micro" />
+                        <span>{{ $memo->memo_date->format('Y年n月j日') }}</span>
                     </div>
-                </div>
+                @endif
+
+                {{-- 公開日時 --}}
+                @if ($memo->published_at)
+                    <div class="flex items-center gap-2 text-sm text-soft-600 dark:text-soft-400">
+                        <flux:icon.globe-alt variant="micro" />
+                        <span>{{ $memo->published_at->format('Y年n月j日 H:i') }} 公開</span>
+                    </div>
+                @endif
             </div>
         </div>
 
         {{-- 送受信者情報 --}}
         @if ($memo->sender || $memo->recipient)
-            <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-900">
-                <div class="grid gap-4 md:grid-cols-2">
+            <div class="border-b border-warmth-200 bg-warmth-50/50 px-8 py-6 dark:border-soft-700 dark:bg-soft-900/50">
+                <div class="grid gap-6 md:grid-cols-2">
                     @if ($memo->sender)
-                        <div>
-                            <flux:heading size="sm" class="text-gray-600 dark:text-gray-400">送信者</flux:heading>
-                            <p class="mt-1 text-gray-900 dark:text-white">{{ $memo->sender }}</p>
+                        <div class="rounded-xl bg-white/60 p-4 dark:bg-soft-800/60">
+                            <div class="mb-2 flex items-center gap-2 text-sm font-medium text-warmth-700 dark:text-warmth-300">
+                                <span>💝</span>
+                                <span>送信者</span>
+                            </div>
+                            <p class="text-lg font-semibold text-warmth-900 dark:text-warmth-100">
+                                {{ $memo->sender }}
+                            </p>
                         </div>
                     @endif
 
                     @if ($memo->recipient)
-                        <div>
-                            <flux:heading size="sm" class="text-gray-600 dark:text-gray-400">受信者</flux:heading>
-                            <p class="mt-1 text-gray-900 dark:text-white">{{ $memo->recipient }}</p>
+                        <div class="rounded-xl bg-white/60 p-4 dark:bg-soft-800/60">
+                            <div class="mb-2 flex items-center gap-2 text-sm font-medium text-coral-700 dark:text-coral-300">
+                                <span>🎁</span>
+                                <span>受信者</span>
+                            </div>
+                            <p class="text-lg font-semibold text-coral-900 dark:text-coral-100">
+                                {{ $memo->recipient }}
+                            </p>
                         </div>
                     @endif
                 </div>
@@ -132,22 +135,34 @@ $delete = function () {
         @endif
 
         {{-- 本文 --}}
-        <div class="p-6">
-            <flux:heading size="sm" class="mb-4 text-gray-600 dark:text-gray-400">本文</flux:heading>
-            <div class="prose prose-gray max-w-none dark:prose-invert">
-                <p class="whitespace-pre-wrap text-gray-900 dark:text-white">{{ $memo->content }}</p>
+        <div class="p-8">
+            <div class="mb-4 flex items-center gap-2 text-sm font-medium text-warmth-700 dark:text-warmth-300">
+                <span>✍️</span>
+                <span>言伝の内容</span>
+            </div>
+            <div class="prose prose-lg max-w-none dark:prose-invert">
+                <p class="whitespace-pre-wrap leading-relaxed text-soft-800 dark:text-soft-200">
+                    {{ $memo->content }}
+                </p>
             </div>
         </div>
     </div>
 
     {{-- フッター情報 --}}
-    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-        <div class="flex items-center justify-between">
-            <div>
-                投稿者: <span class="font-semibold text-gray-900 dark:text-white">{{ $memo->user->name }}</span>
+    <div class="rounded-2xl border border-warmth-200 bg-gradient-to-r from-warmth-50 to-coral-50 p-6 text-sm dark:border-soft-700 dark:from-soft-800 dark:to-soft-700">
+        <div class="flex items-center justify-between text-soft-600 dark:text-soft-400">
+            <div class="flex items-center gap-2">
+                <span>👤</span>
+                <span>投稿者:</span>
+                <span class="font-semibold text-warmth-800 dark:text-warmth-200">
+                    {{ $memo->user->name }}
+                </span>
             </div>
-            <div>
-                ID: {{ $memo->id }}
+            <div class="flex items-center gap-4">
+                <span>🕐 {{ $memo->created_at->format('Y年n月j日 H:i') }}</span>
+                @if ($memo->updated_at->ne($memo->created_at))
+                    <span>✏️ {{ $memo->updated_at->format('Y年n月j日 H:i') }} 更新</span>
+                @endif
             </div>
         </div>
     </div>
