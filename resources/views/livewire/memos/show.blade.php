@@ -146,9 +146,7 @@ $delete = function () {
                 <span>言伝の内容</span>
             </div>
             <div class="prose prose-lg max-w-none dark:prose-invert">
-                <p class="whitespace-pre-wrap leading-relaxed text-soft-800 dark:text-soft-200">
-                    {{ $memo->content }}
-                </p>
+                <p class="whitespace-pre-wrap leading-relaxed text-soft-800 dark:text-soft-200">{{ $memo->content }}</p>
             </div>
         </div>
     </div>
