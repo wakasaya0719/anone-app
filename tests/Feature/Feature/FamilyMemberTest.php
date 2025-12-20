@@ -41,6 +41,54 @@ test('ユーザーは家族メンバーを削除できる', function () {
     expect(FamilyMember::find($member->id))->toBeNull();
 });
 
+test('ユーザーは家族メンバーを編集できる', function () {
+    $user = User::factory()->create();
+    $member = FamilyMember::factory()->create([
+        'user_id' => $user->id,
+        'name' => '太郎',
+        'role' => 'son',
+        'birth_date' => '2015-05-10',
+    ]);
+
+    actingAs($user);
+
+    Volt::test('settings.family')
+        ->call('edit', $member->id)
+        ->assertSet('editingId', $member->id)
+        ->assertSet('name', '太郎')
+        ->assertSet('role', 'son')
+        ->assertSet('birthDate', '2015-05-10')
+        ->set('name', '太郎（更新）')
+        ->set('role', 'son')
+        ->call('save');
+
+    assertDatabaseHas('family_members', [
+        'id' => $member->id,
+        'user_id' => $user->id,
+        'name' => '太郎（更新）',
+        'role' => 'son',
+    ]);
+});
+
+test('編集をキャンセルできる', function () {
+    $user = User::factory()->create();
+    $member = FamilyMember::factory()->create([
+        'user_id' => $user->id,
+        'name' => '太郎',
+        'role' => 'son',
+    ]);
+
+    actingAs($user);
+
+    Volt::test('settings.family')
+        ->call('edit', $member->id)
+        ->assertSet('editingId', $member->id)
+        ->call('cancelEdit')
+        ->assertSet('editingId', null)
+        ->assertSet('name', '')
+        ->assertSet('role', '');
+});
+
 test('ユーザーは他人の家族メンバーを削除できない', function () {
     $user1 = User::factory()->create();
     $user2 = User::factory()->create();
