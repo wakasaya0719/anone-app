@@ -42,20 +42,21 @@
                 </div>
             </a>
 
-            {{-- 統計情報（将来の拡張用） --}}
-            <div class="relative aspect-video overflow-hidden rounded-xl border border-neutral-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 dark:border-neutral-700 dark:from-purple-900/20 dark:to-purple-800/20">
+            {{-- 年表機能 --}}
+            <a href="{{ route('memos.timeline') }}" wire:navigate
+               class="group relative aspect-video overflow-hidden rounded-xl border border-neutral-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 transition hover:shadow-lg dark:border-neutral-700 dark:from-purple-900/20 dark:to-purple-800/20">
                 <div class="flex h-full flex-col items-center justify-center text-center">
-                    <div class="rounded-full bg-purple-500 p-4 text-white">
-                        <flux:icon.chart-bar class="h-8 w-8" />
+                    <div class="rounded-full bg-purple-500 p-4 text-white transition group-hover:scale-110">
+                        <flux:icon.clock class="h-8 w-8" />
                     </div>
                     <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
-                        統計情報
+                        年表
                     </h3>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        近日公開
+                        受信者別のタイムライン
                     </p>
                 </div>
-            </div>
+            </a>
         </div>
 
         {{-- 最近の言伝 --}}
