@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\EmotionTag;
-use App\Enums\MemoStatus;
 use App\Models\Memo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -48,10 +47,10 @@ class DevelopmentSeeder extends Seeder
         $this->command->info('  • その他ユーザー: user1-10@example.com / Test@2025!');
         $this->command->newLine();
         $this->command->info('📊 投入データ統計:');
-        $this->command->info('  • ユーザー: ' . User::count() . '名');
-        $this->command->info('  • 言伝: ' . Memo::count() . '件');
-        $this->command->info('  • 公開済み: ' . Memo::published()->count() . '件');
-        $this->command->info('  • 下書き: ' . Memo::draft()->count() . '件');
+        $this->command->info('  • ユーザー: '.User::count().'名');
+        $this->command->info('  • 言伝: '.Memo::count().'件');
+        $this->command->info('  • 公開済み: '.Memo::published()->count().'件');
+        $this->command->info('  • 下書き: '.Memo::draft()->count().'件');
     }
 
     /**
@@ -80,6 +79,7 @@ class DevelopmentSeeder extends Seeder
         // 既にメモが存在する場合はスキップ
         if ($admin->memos()->count() > 0) {
             $this->command->warn('  管理者のメモは既に存在するためスキップします');
+
             return;
         }
 
@@ -132,6 +132,7 @@ class DevelopmentSeeder extends Seeder
         // 既にメモが存在する場合はスキップ
         if ($user->memos()->count() > 0) {
             $this->command->warn('  一般ユーザーのメモは既に存在するためスキップします');
+
             return;
         }
 
@@ -174,7 +175,7 @@ class DevelopmentSeeder extends Seeder
         ];
 
         foreach ($japaneseNames as $index => $name) {
-            $email = 'user' . ($index + 1) . '@example.com';
+            $email = 'user'.($index + 1).'@example.com';
 
             $generalUser = User::firstOrCreate(
                 ['email' => $email],
@@ -223,8 +224,6 @@ class DevelopmentSeeder extends Seeder
 
     /**
      * ランダムな受信者名を生成
-     *
-     * @return string
      */
     private function getRandomRecipientName(): string
     {

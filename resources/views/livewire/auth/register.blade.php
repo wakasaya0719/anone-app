@@ -52,6 +52,34 @@
                 viewable
             />
 
+            <!-- Family Role -->
+            <flux:field>
+                <flux:label>あなたの続柄（任意）</flux:label>
+                <select name="family_role"
+                    class="w-full rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+                    <option value="">選択してください</option>
+                    <option value="father" {{ old('family_role') === 'father' ? 'selected' : '' }}>父親</option>
+                    <option value="mother" {{ old('family_role') === 'mother' ? 'selected' : '' }}>母親</option>
+                    <option value="grandfather" {{ old('family_role') === 'grandfather' ? 'selected' : '' }}>祖父</option>
+                    <option value="grandmother" {{ old('family_role') === 'grandmother' ? 'selected' : '' }}>祖母</option>
+                    <option value="other" {{ old('family_role') === 'other' ? 'selected' : '' }}>その他</option>
+                </select>
+                <flux:error name="family_role" />
+            </flux:field>
+
+            <!-- Display Name -->
+            <flux:field>
+                <flux:label>表示名（任意）</flux:label>
+                <flux:input
+                    name="display_name"
+                    type="text"
+                    :value="old('display_name')"
+                    placeholder="例：お父さん、パパ"
+                />
+                <flux:description>メモの「FROM」欄に自動的に表示される名前です</flux:description>
+                <flux:error name="display_name" />
+            </flux:field>
+
             <div class="flex items-center justify-end">
                 <flux:button type="submit" variant="primary" class="w-full" data-test="register-user-button">
                     {{ __('Create account') }}

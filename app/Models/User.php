@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'family_role',
+        'display_name',
     ];
 
     /**
@@ -82,5 +84,27 @@ class User extends Authenticatable
         return $this->belongsToMany(Memo::class, 'memo_recipients')
             ->withPivot('is_favorite', 'read_at')
             ->withTimestamps();
+    }
+
+    /**
+     * 家族メンバー
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<FamilyMember>
+     */
+    public function familyMembers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(FamilyMember::class);
+    }
+
+    /**
+     * デフォルトの送信者名を取得
+     */
+    public function defaultSenderName(): string
+    {
+        $defaultMember = $this->familyMembers()
+            ->where('is_default_sender', true)
+            ->first();
+
+        return $defaultMember?->name ?? $this->display_name ?? $this->name;
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
-use function Livewire\Volt\{layout, rules, state, title};
+use function Livewire\Volt\{layout, mount, rules, state, title};
 use App\Enums\EmotionTag;
 use App\Enums\MemoStatus;
-use App\Models\Memo;
+use App\Models\{Memo, FamilyMember};
 
 layout('components.layouts.app');
 title('言伝作成');
@@ -15,10 +15,27 @@ state([
     'emotion_tag' => null,
     'memo_date' => null,
     'sender' => '',
+    'recipientId' => null,
     'recipient' => '',
     'recipient_age' => null,
     'status' => MemoStatus::DRAFT->value,
+    'familyMembers' => [],
 ]);
+
+// 初期化処理
+mount(function () {
+    $user = auth()->user();
+    
+    // デフォルト送信者を自動設定
+    $this->sender = $user->defaultSenderName();
+    
+    // 家族メンバー一覧を取得
+    $this->familyMembers = FamilyMember::query()
+        ->where('user_id', $user->id)
+        ->orderBy('display_order')
+        ->orderBy('created_at')
+        ->get();
+});
 
 // バリデーションルール
 rules([
@@ -27,10 +44,25 @@ rules([
     'emotion_tag' => 'nullable|string',
     'memo_date' => 'nullable|date|before_or_equal:today',
     'sender' => 'nullable|string|max:100',
+    'recipientId' => 'nullable|exists:family_members,id',
     'recipient' => 'nullable|string|max:100',
     'recipient_age' => 'nullable|integer|min:0|max:150',
     'status' => 'required|string',
 ]);
+
+// 受信者選択時の処理
+$updatedRecipientId = function () {
+    if ($this->recipientId) {
+        $member = FamilyMember::find($this->recipientId);
+        if ($member) {
+            $this->recipient = $member->name;
+            $this->recipient_age = $member->age();
+        }
+    } else {
+        $this->recipient = '';
+        $this->recipient_age = null;
+    }
+};
 
 // 言伝作成
 $create = function () {
@@ -131,24 +163,64 @@ $publish = function () {
             </flux:field>
 
             {{-- 送信者・受信者・年齢 --}}
-            <div class="grid gap-4 md:grid-cols-3">
+            <div class="space-y-4">
                 <flux:field class="space-y-2">
                     <flux:label>送信者（From）</flux:label>
                     <flux:input wire:model="sender" type="text" placeholder="例：お父さん" />
+                    <flux:description>
+                        @if ($sender)
+                            初期値として「{{ $sender }}」が自動設定されています
+                        @else
+                            <a href="{{ route('settings.family') }}" class="text-warmth-600 hover:underline" wire:navigate>
+                                家族設定
+                            </a>でデフォルト送信者を設定できます
+                        @endif
+                    </flux:description>
                     <flux:error name="sender" />
                 </flux:field>
 
                 <flux:field class="space-y-2">
                     <flux:label>受信者（To）</flux:label>
-                    <flux:input wire:model="recipient" type="text" placeholder="例：太郎" />
+                    @if ($familyMembers->isNotEmpty())
+                        <select wire:model.live="recipientId"
+                            class="w-full rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+                            <option value="">選択してください</option>
+                            @foreach ($familyMembers as $member)
+                                <option value="{{ $member->id }}">
+                                    {{ $member->name }}
+                                    @if ($member->birth_date)
+                                        （{{ $member->age() }}歳）
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <flux:description>
+                            <a href="{{ route('settings.family') }}" class="text-warmth-600 hover:underline" wire:navigate>
+                                家族設定
+                            </a>で家族メンバーを管理できます
+                        </flux:description>
+                    @else
+                        <flux:input wire:model="recipient" type="text" placeholder="例：太郎" />
+                        <flux:description>
+                            <a href="{{ route('settings.family') }}" class="text-warmth-600 hover:underline" wire:navigate>
+                                家族設定
+                            </a>で家族メンバーを登録すると、選択リストから選べます
+                        </flux:description>
+                    @endif
+                    <flux:error name="recipientId" />
                     <flux:error name="recipient" />
                 </flux:field>
 
-                <flux:field class="space-y-2">
-                    <flux:label>年齢</flux:label>
-                    <flux:input wire:model="recipient_age" type="number" min="0" max="150" placeholder="例：5" />
-                    <flux:error name="recipient_age" />
-                </flux:field>
+                @if ($recipient_age !== null)
+                    <div class="rounded-lg bg-warmth-50 p-4 dark:bg-soft-700">
+                        <div class="flex items-center gap-2 text-sm">
+                            <span class="text-warmth-600 dark:text-warmth-400">年齢:</span>
+                            <span class="font-medium text-warmth-800 dark:text-warmth-200">
+                                {{ $recipient_age }}歳
+                            </span>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
