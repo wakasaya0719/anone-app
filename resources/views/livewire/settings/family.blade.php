@@ -2,16 +2,22 @@
 
 declare(strict_types=1);
 
-use function Livewire\Volt\{state, mount, computed, layout, title, rules};
+use function Livewire\Volt\{state, mount, computed, layout, title, rules, uses};
 use App\Models\FamilyMember;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 layout('components.layouts.app');
 title('家族設定');
+
+// WithFileUploadsトレイトを使用
+uses([WithFileUploads::class]);
 
 state([
     'name' => '',
     'role' => '',
     'birthDate' => '',
+    'photo' => null,
     'editingId' => null,
 ]);
 
@@ -19,6 +25,7 @@ rules([
     'name' => 'required|string|max:50',
     'role' => 'required|string|max:20',
     'birthDate' => 'nullable|date|before:today',
+    'photo' => 'nullable|image|max:2048',
 ]);
 
 $members = computed(function () {
@@ -29,18 +36,29 @@ $members = computed(function () {
         ->get();
 });
 
+$removePhoto = function () {
+    $this->photo = null;
+};
+
 $save = function () {
     $validated = $this->validate();
+
+    // 写真アップロード処理
+    $photoPath = null;
+    if ($this->photo) {
+        $photoPath = $this->photo->store('family_members', 'public');
+    }
 
     FamilyMember::create([
         'user_id' => auth()->id(),
         'name' => $validated['name'],
         'role' => $validated['role'],
         'birth_date' => $validated['birthDate'] ?? null,
+        'photo_path' => $photoPath,
         'display_order' => FamilyMember::where('user_id', auth()->id())->count(),
     ]);
 
-    $this->reset(['name', 'role', 'birthDate']);
+    $this->reset(['name', 'role', 'birthDate', 'photo']);
 
     session()->flash('message', '家族メンバーを追加しました。');
 };
@@ -51,6 +69,10 @@ $delete = function ($id) {
         ->first();
 
     if ($member) {
+        // 写真を削除
+        if ($member->photo_path) {
+            Storage::disk('public')->delete($member->photo_path);
+        }
         $member->delete();
         session()->flash('message', '家族メンバーを削除しました。');
     }
@@ -135,6 +157,39 @@ $getRoleLabel = function (string $role): string {
                 <flux:error name="birthDate" />
             </flux:field>
 
+            <flux:field>
+                <flux:label>顔写真（任意）</flux:label>
+                
+                {{-- プレビュー --}}
+                @if ($photo)
+                    <div class="flex items-center gap-4">
+                        <img src="{{ $photo->temporaryUrl() }}" 
+                            alt="顔写真プレビュー"
+                            class="h-20 w-20 rounded-full object-cover ring-2 ring-warmth-300 shadow-sm">
+                        <flux:button type="button" wire:click="removePhoto" variant="danger" size="sm">
+                            削除
+                        </flux:button>
+                    </div>
+                @endif
+                
+                {{-- アップロード --}}
+                <input type="file" 
+                    wire:model="photo" 
+                    accept="image/*"
+                    class="mt-2 block w-full text-sm text-soft-700 dark:text-soft-300
+                           file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
+                           file:text-sm file:font-semibold file:bg-warmth-100 file:text-warmth-700
+                           hover:file:bg-warmth-200 dark:file:bg-soft-700 dark:file:text-warmth-300
+                           dark:hover:file:bg-soft-600 transition-colors cursor-pointer">
+                
+                <div wire:loading wire:target="photo" class="text-sm text-warmth-600 dark:text-warmth-400">
+                    📤 アップロード中...
+                </div>
+                
+                <flux:error name="photo" />
+                <flux:description>推奨: 正方形、最大2MB</flux:description>
+            </flux:field>
+
             <flux:button type="submit" variant="primary">追加</flux:button>
         </form>
     </div>
@@ -151,19 +206,32 @@ $getRoleLabel = function (string $role): string {
             <div class="mt-4 space-y-3">
                 @foreach ($this->members as $member)
                     <div class="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3">
-                                <span class="font-medium text-lg">{{ $member->name }}</span>
-                                @if ($member->is_default_sender)
-                                    <flux:badge color="blue">デフォルト送信者</flux:badge>
-                                @endif
+                        <div class="flex items-center gap-4 flex-1">
+                            {{-- 顔写真 --}}
+                            @if ($member->photo_path)
+                                <img src="{{ Storage::url($member->photo_path) }}" 
+                                    alt="{{ $member->name }}の写真"
+                                    class="h-16 w-16 rounded-full object-cover ring-2 ring-warmth-300 shadow-sm">
+                            @else
+                                <div class="h-16 w-16 rounded-full bg-warmth-100 dark:bg-soft-700 flex items-center justify-center text-2xl">
+                                    👤
+                                </div>
+                            @endif
+                            
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-medium text-lg">{{ $member->name }}</span>
+                                    @if ($member->is_default_sender)
+                                        <flux:badge color="blue">デフォルト送信者</flux:badge>
+                                    @endif
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    続柄: {{ $this->getRoleLabel($member->role) }}
+                                    @if ($member->birth_date)
+                                        ・ {{ $member->age() }}歳
+                                    @endif
+                                </p>
                             </div>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                続柄: {{ $this->getRoleLabel($member->role) }}
-                                @if ($member->birth_date)
-                                    ・ {{ $member->age() }}歳
-                                @endif
-                            </p>
                         </div>
 
                         <div class="flex gap-2">

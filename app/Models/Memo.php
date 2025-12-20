@@ -38,6 +38,7 @@ class Memo extends Model
         'sender',
         'recipient',
         'recipient_age',
+        'photo_path',
         'status',
         'published_at',
     ];

@@ -1,12 +1,17 @@
 <?php
 
-use function Livewire\Volt\{layout, mount, rules, state, title};
+use function Livewire\Volt\{layout, mount, rules, state, title, uses};
 use App\Enums\EmotionTag;
 use App\Enums\MemoStatus;
 use App\Models\{Memo, FamilyMember};
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 layout('components.layouts.app');
 title('言伝作成');
+
+// WithFileUploadsトレイトを使用
+uses([WithFileUploads::class]);
 
 // 状態管理
 state([
@@ -18,6 +23,7 @@ state([
     'recipientId' => null,
     'recipient' => '',
     'recipient_age' => null,
+    'photo' => null,
     'status' => MemoStatus::DRAFT->value,
     'familyMembers' => [],
 ]);
@@ -47,6 +53,7 @@ rules([
     'recipientId' => 'nullable|exists:family_members,id',
     'recipient' => 'nullable|string|max:100',
     'recipient_age' => 'nullable|integer|min:0|max:150',
+    'photo' => 'nullable|image|max:5120',
     'status' => 'required|string',
 ]);
 
@@ -64,9 +71,20 @@ $updatedRecipientId = function () {
     }
 };
 
+// 写真削除
+$removePhoto = function () {
+    $this->photo = null;
+};
+
 // 言伝作成
 $create = function () {
     $validated = $this->validate();
+    
+    // 写真アップロード処理
+    $photoPath = null;
+    if ($this->photo) {
+        $photoPath = $this->photo->store('memos', 'public');
+    }
     
     $memo = Memo::create([
         'user_id' => auth()->id(),
@@ -77,6 +95,7 @@ $create = function () {
         'sender' => $validated['sender'] ?: null,
         'recipient' => $validated['recipient'] ?: null,
         'recipient_age' => $validated['recipient_age'] ?: null,
+        'photo_path' => $photoPath,
         'status' => $validated['status'],
         'published_at' => $validated['status'] === MemoStatus::PUBLISHED->value ? now() : null,
     ]);
@@ -160,6 +179,44 @@ $publish = function () {
                 <flux:label>投稿日（思い出の日付）</flux:label>
                 <flux:input wire:model="memo_date" type="date" max="{{ today()->format('Y-m-d') }}" />
                 <flux:error name="memo_date" />
+            </flux:field>
+
+            {{-- 写真添付 --}}
+            <flux:field class="space-y-2">
+                <flux:label>写真を添付</flux:label>
+                
+                {{-- プレビュー --}}
+                @if ($photo)
+                    <div class="relative inline-block">
+                        <img src="{{ $photo->temporaryUrl() }}" 
+                            alt="添付写真プレビュー"
+                            class="h-48 w-auto rounded-lg object-cover ring-2 ring-warmth-300 shadow-md">
+                        <button type="button" 
+                            wire:click="removePhoto"
+                            class="absolute -top-2 -right-2 rounded-full bg-red-500 p-1.5 text-white shadow-lg hover:bg-red-600 transition-colors">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                @endif
+                
+                {{-- アップロード --}}
+                <input type="file" 
+                    wire:model="photo" 
+                    accept="image/*"
+                    class="mt-2 block w-full text-sm text-soft-700 dark:text-soft-300
+                           file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 
+                           file:text-sm file:font-semibold file:bg-warmth-100 file:text-warmth-700
+                           hover:file:bg-warmth-200 dark:file:bg-soft-700 dark:file:text-warmth-300
+                           dark:hover:file:bg-soft-600 transition-colors cursor-pointer">
+                
+                <div wire:loading wire:target="photo" class="text-sm text-warmth-600 dark:text-warmth-400">
+                    📤 アップロード中...
+                </div>
+                
+                <flux:error name="photo" />
+                <flux:description>最大5MB、JPG・PNG・GIF対応</flux:description>
             </flux:field>
 
             {{-- 送信者・受信者・年齢 --}}

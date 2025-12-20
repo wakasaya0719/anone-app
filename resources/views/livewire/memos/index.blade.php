@@ -4,6 +4,7 @@ use function Livewire\Volt\{computed, layout, state, title};
 use App\Models\Memo;
 use App\Enums\MemoStatus;
 use App\Enums\EmotionTag;
+use Illuminate\Support\Facades\Storage;
 
 layout('components.layouts.app');
 title('言伝一覧');
@@ -14,6 +15,7 @@ state(['search' => '', 'recipient' => '', 'emotionTag' => '', 'status' => '']);
 // 言伝一覧を取得（検索・フィルター対応）
 $memos = computed(function () {
     return Memo::query()
+        ->with('user.familyMembers')
         ->where('user_id', auth()->id())
         ->when($this->search, function ($query) {
             $query->where(function ($q) {
@@ -160,7 +162,16 @@ $delete = function (Memo $memo) {
         <div class="space-y-6">
             @foreach ($this->memos as $memo)
                 <article class="group memo-card">
-                    <div class="flex items-start justify-between">
+                    <div class="flex items-start gap-4">
+                        {{-- 添付写真サムネイル --}}
+                        @if ($memo->photo_path)
+                            <div class="flex-shrink-0">
+                                <img src="{{ Storage::url($memo->photo_path) }}" 
+                                    alt="添付写真"
+                                    class="h-24 w-24 rounded-xl object-cover ring-2 ring-warmth-200 dark:ring-soft-600 shadow-sm">
+                            </div>
+                        @endif
+                        
                         <div class="flex-1">
                             {{-- タイトル --}}
                             <h3 class="text-xl font-bold text-warmth-800 dark:text-warmth-200">
@@ -229,7 +240,7 @@ $delete = function (Memo $memo) {
                         </div>
 
                         {{-- アクションボタン --}}
-                        <div class="ml-6 flex flex-col gap-2">
+                        <div class="ml-6 flex flex-col gap-2 flex-shrink-0">
                             <flux:button
                                 href="{{ route('memos.show', $memo) }}"
                                 wire:navigate

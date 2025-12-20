@@ -25,6 +25,7 @@ class FamilyMember extends Model
         'birth_date',
         'is_default_sender',
         'display_order',
+        'photo_path',
     ];
 
     /**
