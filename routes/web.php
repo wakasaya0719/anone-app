@@ -38,4 +38,8 @@ Route::middleware(['auth'])->group(function () {
             ),
         )
         ->name('two-factor.show');
+
+    // 家族への案内状PDF生成
+    Route::get('settings/family-guide/download', [App\Http\Controllers\FamilyGuideController::class, 'download'])
+        ->name('family-guide.download');
 });

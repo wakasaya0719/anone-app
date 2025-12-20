@@ -364,6 +364,53 @@ $getRoleLabel = function (string $role): string {
             </div>
         @endif
     </div>
+
+    <!-- 家族への案内状セクション -->
+    <div class="mt-12 p-6 bg-gradient-to-br from-warmth-50 to-soft-50 dark:from-gray-800 dark:to-gray-850 rounded-lg shadow-lg border border-warmth-200 dark:border-gray-700">
+        <div class="flex items-start gap-4">
+            <div class="text-4xl">📄</div>
+            <div class="flex-1">
+                <flux:heading size="lg">家族への案内状</flux:heading>
+                <flux:subheading class="mt-2">
+                    万が一の時に備えて、家族にこのアプリの存在を知らせる案内状を作成できます。
+                </flux:subheading>
+
+                <div class="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg">
+                    <div class="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+                        <p><strong>📋 案内状の内容：</strong></p>
+                        <ul class="list-disc list-inside ml-4 space-y-1">
+                            <li>このアプリの説明</li>
+                            <li>アクセス方法（URLとログイン手順）</li>
+                            <li>パスワードリセットの方法</li>
+                            <li>サポート連絡先</li>
+                            <li>QRコード貼付欄</li>
+                        </ul>
+
+                        <p class="mt-4"><strong>💡 使い方：</strong></p>
+                        <ol class="list-decimal list-inside ml-4 space-y-1">
+                            <li>下のボタンからPDFをダウンロード</li>
+                            <li>印刷して、大切な場所に保管</li>
+                            <li>家族が見つけやすい場所に置いておく</li>
+                        </ol>
+
+                        <div class="mt-4 p-3 bg-warmth-50 dark:bg-gray-700 rounded border border-warmth-200 dark:border-gray-600">
+                            <p class="text-xs text-warmth-800 dark:text-warmth-200">
+                                ⚠️ <strong>注意：</strong>この案内状には、あなたのメールアドレスが記載されます。
+                                家族がパスワードリセットを行うには、登録メールアドレスへのアクセスが必要です。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{{ route('family-guide.download') }}" 
+                        class="inline-flex items-center px-6 py-3 bg-gray-900 hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 text-white font-semibold rounded-lg shadow transition-colors duration-200">
+                        📥 案内状をダウンロード（PDF）
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
