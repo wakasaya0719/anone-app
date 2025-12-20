@@ -59,11 +59,19 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="メイン" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        ダッシュボード
+                        トップページ
                     </flux:navlist.item>
 
-                    <flux:navlist.item icon="chat-bubble-left-right" :href="route('memos.index')" :current="request()->routeIs('memos.*')" wire:navigate>
-                        言伝
+                    <flux:navlist.item icon="document-text" :href="route('memos.index')" :current="request()->routeIs('memos.index')" wire:navigate>
+                        言伝一覧
+                    </flux:navlist.item>
+
+                    <flux:navlist.item icon="plus-circle" :href="route('memos.create')" :current="request()->routeIs('memos.create')" wire:navigate>
+                        新規作成
+                    </flux:navlist.item>
+
+                    <flux:navlist.item icon="clock" :href="route('memos.timeline')" :current="request()->routeIs('memos.timeline')" wire:navigate>
+                        年表
                     </flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>

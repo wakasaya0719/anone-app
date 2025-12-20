@@ -109,50 +109,64 @@ $selectRecipient = function (?string $recipient) {
     {{-- 年表表示エリア --}}
     <div class="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
         @if($this->timelineMemos->count() > 0)
-            <div class="relative space-y-6">
+            <div class="relative space-y-8">
                 {{-- タイムライン縦線 --}}
-                <div class="absolute left-8 top-0 h-full w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
+                <div class="absolute left-2.5 top-0 h-full w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500"></div>
                 
                 @foreach($this->timelineMemos as $memo)
-                    <div class="relative pl-20">
-                        {{-- タイムライン丸印 --}}
-                        <div class="absolute left-6 top-2 h-5 w-5 rounded-full border-4 border-white bg-blue-500 dark:border-gray-800"></div>
-                        
-                        {{-- 日付 --}}
-                        <div class="absolute left-0 top-1 w-16 text-right text-xs font-semibold text-gray-500 dark:text-gray-400">
-                            @if($memo->memo_date)
-                                {{ $memo->memo_date->format('Y/n/j') }}
-                            @else
-                                {{ $memo->created_at->format('Y/n/j') }}
-                            @endif
+                    <div class="relative flex gap-4">
+                        {{-- 左側: 青丸と日付 --}}
+                        <div class="flex flex-col items-center" style="min-width: 80px;">
+                            {{-- タイムライン丸印 --}}
+                            <div class="relative z-10 h-5 w-5 rounded-full border-4 border-white bg-blue-500 shadow-md dark:border-gray-800"></div>
+                            
+                            {{-- 日付 --}}
+                            <div class="mt-2 text-center">
+                                <div class="text-xs font-bold text-gray-600 dark:text-gray-400">
+                                    @if($memo->memo_date)
+                                        {{ $memo->memo_date->format('Y年') }}
+                                    @else
+                                        {{ $memo->created_at->format('Y年') }}
+                                    @endif
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 dark:text-gray-200">
+                                    @if($memo->memo_date)
+                                        {{ $memo->memo_date->format('n/j') }}
+                                    @else
+                                        {{ $memo->created_at->format('n/j') }}
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                         
-                        {{-- 投稿カード --}}
-                        <a 
-                            href="{{ route('memos.show', $memo) }}" 
-                            wire:navigate
-                            class="block rounded-lg border border-gray-200 bg-gray-50 p-4 transition hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-blue-500 dark:hover:bg-gray-600"
-                        >
-                            {{-- タイトル --}}
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100">
-                                {{ $memo->title }}
-                            </h3>
-                            
-                            {{-- 本文プレビュー --}}
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                {{ Str::limit($memo->content, 100) }}
-                            </p>
-                            
-                            {{-- 感情タグ --}}
-                            @if($memo->emotion_tag)
-                                <div class="mt-3 flex items-center gap-2">
-                                    <span class="text-base">{{ $memo->emotion_tag->emoji() }}</span>
-                                    <span class="text-sm text-gray-600 dark:text-gray-400">
-                                        {{ $memo->emotion_tag->label() }}
-                                    </span>
-                                </div>
-                            @endif
-                        </a>
+                        {{-- 右側: 投稿カード --}}
+                        <div class="flex-1">
+                            <a 
+                                href="{{ route('memos.show', $memo) }}" 
+                                wire:navigate
+                                class="block rounded-lg border border-gray-200 bg-gray-50 p-4 transition hover:border-blue-300 hover:bg-blue-50 hover:shadow-md dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-blue-500 dark:hover:bg-gray-600"
+                            >
+                                {{-- タイトル --}}
+                                <h3 class="font-semibold text-gray-900 dark:text-gray-100">
+                                    {{ $memo->title }}
+                                </h3>
+                                
+                                {{-- 本文プレビュー --}}
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    {{ Str::limit($memo->content, 100) }}
+                                </p>
+                                
+                                {{-- 感情タグ --}}
+                                @if($memo->emotion_tag)
+                                    <div class="mt-3 flex items-center gap-2">
+                                        <span class="text-base">{{ $memo->emotion_tag->emoji() }}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ $memo->emotion_tag->label() }}
+                                        </span>
+                                    </div>
+                                @endif
+                            </a>
+                        </div>
                     </div>
                 @endforeach
             </div>

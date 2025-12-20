@@ -122,14 +122,9 @@ $publish = function () {
 <div class="space-y-8 animate-gentle-fade-in">
     {{-- ヘッダー --}}
     <div class="flex items-center justify-between rounded-2xl bg-white/80 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/80">
-        <div>
-            <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
-                ✍️ 言伝作成
-            </flux:heading>
-            <p class="mt-2 text-sm text-soft-600 dark:text-soft-400">
-                大切な想いを言葉に込めて、未来へ届けましょう
-            </p>
-        </div>
+        <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
+            ✍️ 言伝作成
+        </flux:heading>
 
         <flux:button 
             href="{{ route('memos.index') }}" 

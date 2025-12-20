@@ -81,14 +81,9 @@ $delete = function (Memo $memo) {
 <div class="space-y-8 animate-gentle-fade-in">
     {{-- ヘッダー - より柔らかいスタイル --}}
     <div class="flex items-center justify-between rounded-2xl bg-white/80 p-6 shadow-md backdrop-blur-sm dark:bg-soft-800/80">
-        <div>
-            <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
-                📝 言伝一覧
-            </flux:heading>
-            <p class="mt-2 text-sm text-soft-600 dark:text-soft-400">
-                心を込めた言葉を、未来へ届けましょう
-            </p>
-        </div>
+        <flux:heading size="xl" class="text-warmth-800 dark:text-warmth-200">
+            📝 言伝一覧
+        </flux:heading>
         
         <flux:button 
             href="{{ route('memos.create') }}" 

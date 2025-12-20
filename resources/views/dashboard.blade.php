@@ -2,7 +2,7 @@
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         {{-- ウェルカムメッセージ --}}
         <div>
-            <flux:heading size="xl">ダッシュボード</flux:heading>
+            <flux:heading size="xl">トップページ</flux:heading>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
                 こんにちは、{{ auth()->user()->name }}さん
             </p>
